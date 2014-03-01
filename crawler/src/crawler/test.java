@@ -56,11 +56,19 @@ public class test {
 		//int count = 0;
 		Scanner input = new Scanner(System.in); // Taking input from the user.
 		String str_input = "";
-		System.out.println("Input the amount and no. of gifts or quit to exit");
-		System.out.print("Format (amount,no. of gifts): ");
+		System.out.println("\n\nTime to shop :)");
+		System.out.println("Input the amount(integer value) and no. of gifts or quit to exit");
+		System.out.print("Format <amount,no. of gifts>: ");
 		while(!(str_input = input.nextLine()).equals("quit")) // takes input unless it is 'quit'
 		{
 			String[] split = str_input.split(",");
+			if(split[0].contains("."))
+			{
+				String[] tmp = split[0].split("\\.");
+				split[0] = tmp[0];
+				System.out.println("Expected an integer input for amount");
+				System.out.println("But I got you covered. Now computing for " +split[0]);
+			}
 			value = Integer.parseInt(split[0]); // the user desired amount.
 			int n = Integer.parseInt(split[1]); // the number of gifts user is looking for.
 			time = System.currentTimeMillis();
@@ -68,9 +76,9 @@ public class test {
 			final_list.sort(); // Sorting the results: Redundant if the sum is checked for value in addToFinalList().
 			final_list.display(); // display the results to the user.
 			time = System.currentTimeMillis() - time;
-			System.out.println("\n::::Please check 'output.txt' for top combinations:::: " +time+ " milliseconds"); // printing time for analysis.
-			System.out.println("Input the amount and no. of gifts or quit to exit");
-			System.out.print("Format (amount,no. of gifts): ");
+			System.out.println("\n::::Please check 'output.txt' for top combinations:::: "); 
+			System.out.println("Query handled in " +time+ " milliseconds"); // printing time for analysis.
+			System.out.print("\nNew query (amount,no. of gifts): ");
 			final_list.clear(); // clear the list before asking for new query.
 		}
 	}
@@ -154,28 +162,37 @@ public class test {
 	 * 	   : We can make much more combinations. I ran out of time :( 
 	 */
 	private static void addToFinalList(int[] arr)
-	{ 
-		int size = arr.length;
+	{
 		float sum = 0;
 		ProductDetailsLL pdll = new ProductDetailsLL(); // create a new ProductDetailsLL for the combination.
-		
-		while(size > 0)
+		int i = 0; // index of ArrayList. Used in case of price duplicates.
+		int k = 0;
+		while(k < arr.length) // till the array has elements
 		{
-			int price = arr[size-1];
-			String pRange = getPriceRange(price);
-			int arrIndex = getArrIndex(price);
-			ArrayList<ProductDetails>[] array = table.get(pRange);
-			ArrayList<ProductDetails>al = array[arrIndex];
-			ProductDetails pd = al.get(0);
-			ProductDetailsList pdl = new ProductDetailsList(pd);
-			sum += pd.price;
-			size--;
-			pdll.add(pdl);
+			int prePrice = 0;
+			if(k > 0)
+				prePrice = arr[k-1]; // price of the previous gift.
+			int price = arr[k];
+			String pRange = getPriceRange(price); // get the key
+			int arrIndex = getArrIndex(price); // get the arrayIndex
+			ArrayList<ProductDetails>[] array = table.get(pRange); // get the array from the table.
+			ArrayList<ProductDetails>al = array[arrIndex]; // get the ArrayList.
+			ProductDetails pd;
+			if(prePrice == price) // If the previous price is equal to this price then take the next element from the ArrayList
+				i++;
+			if(i < al.size()) // check for index
+				pd = al.get(i); // Get the object.
+			else
+				break; // ran out of objects in the ArrayList.
+			ProductDetailsList pdl = new ProductDetailsList(pd); // create ProductDetailsList object
+			sum += pd.price; // compute the new sum.
+			k++;
+			pdll.add(pdl); // Add the ProductDetailsList to the LinkedList
 		}
-		if(sum == value)
+		if(sum == value) // for zero error. Can be removed for some error.
 		{
-			FinalProduct fp = new FinalProduct(pdll ,sum);
-			final_list.add(fp);
+			FinalProduct fp = new FinalProduct(pdll ,sum); // create FinalProduct object
+			final_list.add(fp); // Add it to the final_list
 		}
 	}
 	
